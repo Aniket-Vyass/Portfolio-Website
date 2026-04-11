@@ -21,9 +21,8 @@ const Career = () => {
               <h3>20XX</h3>
             </div>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim
-              labore sit non ipsum temporibus quidem, deserunt eaque officiis
-              mollitia ratione suscipit repellat.
+              Worked at this company, did this job, Edited video on that topic,
+              worked mostly on youtube videos and reels.
             </p>
           </div>
           <div className="career-info-box">
@@ -35,9 +34,8 @@ const Career = () => {
               <h3>20XX</h3>
             </div>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim
-              labore sit non ipsum temporibus quidem, deserunt eaque officiis
-              mollitia ratione suscipit repellat.
+              Worked at this company, did this job, Edited video on that topic,
+              worked mostly on youtube videos and reels.
             </p>
           </div>
           <div className="career-info-box">
@@ -49,9 +47,8 @@ const Career = () => {
               <h3>NOW</h3>
             </div>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim
-              labore sit non ipsum temporibus quidem, deserunt eaque officiis
-              mollitia ratione suscipit repellat.
+              Worked at this company, did this job, Edited video on that topic,
+              worked mostly on youtube videos and reels.
             </p>
           </div>
         </div>

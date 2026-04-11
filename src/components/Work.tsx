@@ -40,6 +40,8 @@ const Work = () => {
     ease: "none",
   });
 
+  ScrollTrigger.refresh();
+
   // Clean up (optional, good practice)
   return () => {
     timeline.kill();

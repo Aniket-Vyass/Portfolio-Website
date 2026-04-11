@@ -10,8 +10,8 @@ const Contact = () => {
           <div className="contact-box">
             <h4>Email</h4>
             <p>
-              <a href="mailto:example@mail.com" data-cursor="disable">
-                example@mail.com
+              <a href="adityaharsh52@gmail.com" data-cursor="disable">
+                adityaharsh52@gmail.com
               </a>
             </p>
             <h4>Phone</h4>
@@ -48,7 +48,7 @@ const Contact = () => {
               Twitter <MdArrowOutward />
             </a>
             <a
-              href="https://www.instagram.com"
+              href="https://www.instagram.com/aditya_31_24?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
               target="_blank"
               data-cursor="disable"
               className="contact-social"
@@ -58,7 +58,7 @@ const Contact = () => {
           </div>
           <div className="contact-box">
             <h2>
-              Designed and Developed <br /> by <span>Moncy Yohannan</span>
+              Designed and Developed <br /> by <span>Aditya Harsh</span>
             </h2>
             <h5>
               <MdCopyright /> 2024

@@ -1,4 +1,5 @@
 import { lazy, PropsWithChildren, Suspense, useEffect, useState } from "react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import About from "./About";
 import Career from "./Career";
 import Contact from "./Contact";
@@ -21,6 +22,7 @@ const MainContainer = ({ children }: PropsWithChildren) => {
     const resizeHandler = () => {
       setSplitText();
       setIsDesktopView(window.innerWidth > 1024);
+      ScrollTrigger.refresh();
     };
     resizeHandler();
     window.addEventListener("resize", resizeHandler);
@@ -43,12 +45,12 @@ const MainContainer = ({ children }: PropsWithChildren) => {
             <WhatIDo />
             <Career />
             <Work />
+            <Contact />
             {isDesktopView && (
               <Suspense fallback={<div>Loading....</div>}>
                 <TechStack />
               </Suspense>
             )}
-            <Contact />
           </div>
         </div>
       </div>
