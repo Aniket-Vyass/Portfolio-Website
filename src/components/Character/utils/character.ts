@@ -3,6 +3,88 @@ import { DRACOLoader, GLTF, GLTFLoader } from "three-stdlib";
 import { setCharTimeline, setAllTimeline } from "../../utils/GsapScroll";
 import { decryptFile } from "./decrypt";
 
+/**
+ * Creates a baseball cap mesh group to replace the hair.
+ * The cap consists of a dome (crown) and a brim (visor).
+ */
+function createCap(): THREE.Group {
+  const capGroup = new THREE.Group();
+  capGroup.name = "cap";
+
+  const capMaterial = new THREE.MeshStandardMaterial({
+    color: 0x111111,
+    roughness: 0.7,
+    metalness: 0.0,
+  });
+
+  // --- Crown (dome) ---
+  // SphereGeometry: radius, widthSegments, heightSegments, phiStart, phiLength, thetaStart, thetaLength
+  // Upper hemisphere only (thetaStart=0, thetaLength=PI/2)
+  const crownGeometry = new THREE.SphereGeometry(
+    0.105,  // radius — matches hair bounding box (~0.1)
+    32,     // width segments
+    16,     // height segments
+    0,      // phiStart
+    Math.PI * 2, // phiLength (full circle)
+    0,      // thetaStart (top)
+    Math.PI * 0.55 // thetaLength (slightly past hemisphere for coverage)
+  );
+  const crown = new THREE.Mesh(crownGeometry, capMaterial);
+  crown.scale.set(1.0, 0.75, 1.0); // flatten slightly
+  crown.position.set(0, 0.0, 0.0);
+  crown.castShadow = true;
+  capGroup.add(crown);
+
+  // --- Band (bottom ring of the cap) ---
+  const bandGeometry = new THREE.TorusGeometry(0.1, 0.008, 8, 32);
+  const bandMaterial = new THREE.MeshStandardMaterial({
+    color: 0x0a0a0a,
+    roughness: 0.5,
+    metalness: 0.1,
+  });
+  const band = new THREE.Mesh(bandGeometry, bandMaterial);
+  band.position.set(0, -0.01, 0);
+  band.rotation.x = Math.PI / 2;
+  band.castShadow = true;
+  capGroup.add(band);
+
+  // --- Brim (visor) ---
+  // Create a curved brim using a partial cylinder
+  const brimShape = new THREE.Shape();
+  // Semi-circular brim
+  brimShape.absarc(0, 0, 0.12, -Math.PI * 0.45, Math.PI * 0.45, false);
+  brimShape.absarc(0, 0, 0.06, Math.PI * 0.45, -Math.PI * 0.45, true);
+
+  const brimExtrudeSettings = {
+    depth: 0.012,
+    bevelEnabled: true,
+    bevelThickness: 0.002,
+    bevelSize: 0.002,
+    bevelSegments: 2,
+  };
+
+  const brimGeometry = new THREE.ExtrudeGeometry(brimShape, brimExtrudeSettings);
+  const brim = new THREE.Mesh(brimGeometry, capMaterial);
+  brim.rotation.x = Math.PI / 2 + 0.15; // angle slightly downward
+  brim.position.set(0, -0.02, 0.08); // in front of face
+  brim.castShadow = true;
+  capGroup.add(brim);
+
+  // --- Button on top ---
+  const buttonGeometry = new THREE.SphereGeometry(0.012, 8, 8);
+  const button = new THREE.Mesh(buttonGeometry, capMaterial);
+  button.position.set(0, 0.075, 0);
+  capGroup.add(button);
+
+  // Position the cap group to match where the hair was
+  // Hair was at translation: [-0.00008, 1.483, 0.029] relative to spine.006
+  // with scale [10.9, 9.0, 11.1] — but the cap uses world-appropriate sizes
+  capGroup.position.set(-0.00008, 1.48, 0.025);
+  capGroup.rotation.x = -0.048; // match hair's slight tilt
+
+  return capGroup;
+}
+
 const setCharacter = (
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
@@ -28,14 +110,102 @@ const setCharacter = (
           async (gltf) => {
             character = gltf.scene;
             await renderer.compileAsync(character, camera, scene);
+            // Color definitions
+            const blackColor = new THREE.Color(0x0a0a0a);
+            const lightBrownSkin = new THREE.Color(0xc68642);
+
+            // Mesh names that represent clothing (should be black)
+            const clothingMeshes = [
+              "BODY.SHIRT",
+              "Pant",
+              "Shoe",
+              "Sole",
+            ];
+            // Mesh names that represent skin (should be light brown)
+            const skinMeshes = [
+              "Hand",
+              "Neck",
+              "Ear.001",
+              "Face.002",
+              "Plane.007", // additional body surface
+            ];
+
             character.traverse((child: any) => {
               if (child.isMesh) {
                 const mesh = child as THREE.Mesh;
                 child.castShadow = true;
                 child.receiveShadow = true;
                 mesh.frustumCulled = true;
+
+                const name = mesh.name || (mesh.parent && mesh.parent.name) || "";
+
+                // Hide the hair mesh — replaced by cap
+                if (name === "hair") {
+                  mesh.visible = false;
+                  return;
+                }
+
+                // Apply color overrides by cloning material
+                if (name === "BODY.SHIRT") {
+                  // BODY.SHIRT includes both the shirt AND chin/jaw area.
+                  // Use onBeforeCompile to split color by world-space Y position.
+                  const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
+                  mat.color.copy(blackColor);
+                  mat.onBeforeCompile = (shader) => {
+                    // Pass skin color as a uniform
+                    shader.uniforms.uSkinColor = { value: lightBrownSkin };
+                    shader.uniforms.uNecklineY = { value: 11.3 };
+                    shader.uniforms.uBlendWidth = { value: 0.15 };
+
+                    // Add varying for world Y position
+                    shader.vertexShader = shader.vertexShader.replace(
+                      '#include <common>',
+                      `#include <common>
+                      varying float vWorldY;`
+                    );
+                    shader.vertexShader = shader.vertexShader.replace(
+                      '#include <worldpos_vertex>',
+                      `#include <worldpos_vertex>
+                      vWorldY = worldPosition.y;`
+                    );
+
+                    // Mix shirt color and skin color based on Y position
+                    shader.fragmentShader = shader.fragmentShader.replace(
+                      '#include <common>',
+                      `#include <common>
+                      varying float vWorldY;
+                      uniform vec3 uSkinColor;
+                      uniform float uNecklineY;
+                      uniform float uBlendWidth;`
+                    );
+                    shader.fragmentShader = shader.fragmentShader.replace(
+                      '#include <color_fragment>',
+                      `#include <color_fragment>
+                      float skinFactor = smoothstep(uNecklineY - uBlendWidth, uNecklineY + uBlendWidth, vWorldY);
+                      diffuseColor.rgb = mix(diffuseColor.rgb, uSkinColor, skinFactor);`
+                    );
+                  };
+                  mat.needsUpdate = true;
+                  mesh.material = mat;
+                } else if (clothingMeshes.includes(name)) {
+                  const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
+                  mat.color.copy(blackColor);
+                  mesh.material = mat;
+                } else if (skinMeshes.includes(name)) {
+                  const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
+                  mat.color.copy(lightBrownSkin);
+                  mesh.material = mat;
+                }
               }
             });
+
+            // Add cap to the head bone (spine.006) so it follows head movement
+            const headBone = character.getObjectByName("spine006");
+            if (headBone) {
+              const cap = createCap();
+              headBone.add(cap);
+            }
+
             resolve(gltf);
             setCharTimeline(character, camera);
             setAllTimeline();
