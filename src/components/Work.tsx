@@ -16,24 +16,24 @@ type WorkItem = {
 const workItems: WorkItem[] = [
   {
     id: 1,
-    name: "Edit for Chai Leela",
-    category: "Video Editing",
-    tools: "Premiere Pro, DaVinci Resolve, Final Cut Pro, Picsart",
-    src: "/videos/Aresturant.mp4",
-  },
-  {
-    id: 2,
-    name: "Sony Cycle Sports",
-    category: "Video Editing",
-    tools: "Premiere Pro, DaVinci Resolve, Final Cut Pro, Picsart",
-    src: "/videos/cycle.MP4",
-  },
-  {
-    id: 3,
     name: "Game Greed",
     category: "Video Editing",
     tools: "Premiere Pro, DaVinci Resolve, Final Cut Pro, Picsart",
     src: "/videos/game.MP4",
+  },
+  {
+    id: 2,
+    name: "3D Globe Motion",
+    category: "Motion Graphics",
+    tools: "Premiere Pro, DaVinci Resolve, Final Cut Pro, Picsart, Blender",
+    src: "/videos/globe.MP4",
+  },
+  {
+    id: 3,
+    name: "Sony Cycle Sports",
+    category: "Video Editing",
+    tools: "Premiere Pro, DaVinci Resolve, Final Cut Pro, Picsart",
+    src: "/videos/cycle.MP4",
   },
   {
     id: 4,
@@ -44,10 +44,11 @@ const workItems: WorkItem[] = [
   },
   {
     id: 5,
-    name: "3D Globe Motion",
+    name: "Edit for Chai Leela",
     category: "Video Editing",
-    tools: "Premiere Pro, DaVinci Resolve, Final Cut Pro, Picsart, Blender",
-    src: "/videos/globe.MP4",
+    tools: "Premiere Pro, DaVinci Resolve, Final Cut Pro, Picsart",
+    src: "/videos/Aresturant.mp4",
+
   },
 ];
 
@@ -116,22 +117,22 @@ const Work = () => {
               <div className="work-image">
                 <div className="work-image-in">
                   <video
-  src={item.src}
-  muted
-  loop
-  playsInline
-  onMouseEnter={(e) => {
-    const v = e.currentTarget;
-    v.muted = false;
-    v.play();
-  }}
-  onMouseLeave={(e) => {
-    const v = e.currentTarget;
-    v.muted = true;
-    v.pause();
-    v.currentTime = 0;
-  }}
-/>
+                    src={item.src}
+                    muted
+                    loop
+                    playsInline
+                    onMouseEnter={(e) => {
+                      const v = e.currentTarget;
+                      v.muted = false;
+                      v.play();
+                    }}
+                    onMouseLeave={(e) => {
+                      const v = e.currentTarget;
+                      v.muted = true;
+                      v.pause();
+                      v.currentTime = 0;
+                    }}
+                  />
                 </div>
               </div>
             </div>
