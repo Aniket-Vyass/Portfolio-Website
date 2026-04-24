@@ -110,92 +110,12 @@ const setCharacter = (
           async (gltf) => {
             character = gltf.scene;
             await renderer.compileAsync(character, camera, scene);
-            // Color definitions
-            const blackColor = new THREE.Color(0x0a0a0a);
-            const lightBrownSkin = new THREE.Color(0xc68642);
-
-            // Mesh names that represent clothing (should be black)
-            const clothingMeshes = [
-              "BODY.SHIRT",
-              "Pant",
-              "Shoe",
-              "Sole",
-            ];
-            // Mesh names that represent skin (should be light brown)
-            const skinMeshes = [
-              "Hand",
-              "Neck",
-              "Ear.001",
-              "Face.002",
-              "Plane.007", // additional body surface
-            ];
 
             character.traverse((child: any) => {
               if (child.isMesh) {
-                const mesh = child as THREE.Mesh;
                 child.castShadow = true;
                 child.receiveShadow = true;
-                mesh.frustumCulled = true;
-
-                const name = mesh.name || (mesh.parent && mesh.parent.name) || "";
-
-                // Hide the hair mesh — replaced by cap
-                if (name === "hair") {
-                  mesh.visible = false;
-                  return;
-                }
-
-                // Apply color overrides by cloning material
-                if (name === "BODY.SHIRT") {
-                  // BODY.SHIRT includes both the shirt AND chin/jaw area.
-                  // Use onBeforeCompile to split color by world-space Y position.
-                  const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-                  mat.color.copy(blackColor);
-                  mat.onBeforeCompile = (shader) => {
-                    // Pass skin color as a uniform
-                    shader.uniforms.uSkinColor = { value: lightBrownSkin };
-                    shader.uniforms.uNecklineY = { value: 11.3 };
-                    shader.uniforms.uBlendWidth = { value: 0.15 };
-
-                    // Add varying for world Y position
-                    shader.vertexShader = shader.vertexShader.replace(
-                      '#include <common>',
-                      `#include <common>
-                      varying float vWorldY;`
-                    );
-                    shader.vertexShader = shader.vertexShader.replace(
-                      '#include <worldpos_vertex>',
-                      `#include <worldpos_vertex>
-                      vWorldY = worldPosition.y;`
-                    );
-
-                    // Mix shirt color and skin color based on Y position
-                    shader.fragmentShader = shader.fragmentShader.replace(
-                      '#include <common>',
-                      `#include <common>
-                      varying float vWorldY;
-                      uniform vec3 uSkinColor;
-                      uniform float uNecklineY;
-                      uniform float uBlendWidth;`
-                    );
-                    shader.fragmentShader = shader.fragmentShader.replace(
-                      '#include <color_fragment>',
-                      `#include <color_fragment>
-                      float skinFactor = smoothstep(uNecklineY - uBlendWidth, uNecklineY + uBlendWidth, vWorldY);
-                      diffuseColor.rgb = mix(diffuseColor.rgb, uSkinColor, skinFactor);`
-                    );
-                  };
-                  mat.needsUpdate = true;
-                  mesh.material = mat;
-                } else if (clothingMeshes.includes(name)) {
-                  const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-                  mat.color.copy(blackColor);
-                  mesh.material = mat;
-                } else if (skinMeshes.includes(name)) {
-                  const mat = (mesh.material as THREE.MeshStandardMaterial).clone();
-                  mat.color.copy(lightBrownSkin);
-                  mesh.material = mat;
-                }
+                (child as THREE.Mesh).frustumCulled = true;
               }
             });
 
