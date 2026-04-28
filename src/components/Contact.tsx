@@ -58,7 +58,11 @@ const Contact = () => {
           </div>
           <div className="contact-box">
             <h2>
-              Website Designed and Developed <br /> by <span>Aniket Vyas</span>
+              Website Designed and Developed <br /> by <span>
+                <a
+                  href='https://www.linkedin.com/in/aniket-vyas-55526335a/'
+
+                >Aniket Vyas</a></span>
             </h2>
             <h5>
               <MdCopyright /> 2026
