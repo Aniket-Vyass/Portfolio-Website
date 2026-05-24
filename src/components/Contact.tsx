@@ -63,8 +63,6 @@ const Contact = () => {
                   href='https://www.linkedin.com/in/aniket-vyas-55526335a/'
                   target="_blank"
                   rel="noopener noreferrer"
-
-
                 >Aniket Vyas</a></span>
             </h2>
             <h5>
